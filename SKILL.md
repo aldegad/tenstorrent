@@ -88,7 +88,7 @@ curl -sS -X POST "https://console.tenstorrent.com/v1/video/jobs" \
   }'
 ```
 
-Poll `GET /v1/video/jobs/{id}` until `status: completed`, then download `video_url` or the first returned presigned URL immediately. In live use, `status: completed` can appear briefly before `video_url`; keep polling until the URL appears.
+Poll `GET /v1/video/jobs/{id}` until `status: completed`, then download `video_url` first, or the first non-empty returned presigned/artifact URL if `video_url` is absent. In live use, `status: completed` can appear briefly before an artifact URL; keep polling until a URL appears. If job creation returns no id, surface the API response body instead of replacing it with a generic error.
 
 ### TTS
 

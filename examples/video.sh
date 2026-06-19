@@ -6,7 +6,7 @@ set -euo pipefail
 prompt="${1:-A calm cinematic shot of a tiny robot waving beside a workbench, soft studio light.}"
 mkdir -p output
 
-job_id="$(
+create_response="$(
   curl -sS -X POST "https://console.tenstorrent.com/v1/video/jobs" \
     -H "Authorization: Bearer ${TENSTORRENT_KEY}" \
     -H "Content-Type: application/json" \
@@ -14,11 +14,18 @@ job_id="$(
       model: "Wan2.2-T2V-A14B-Diffusers",
       prompt: $prompt,
       negative_prompt: "low quality, distorted hands, blurry"
-    }')" | jq -r '.job_id // .id'
+    }')"
 )"
 
-if [[ -z "$job_id" || "$job_id" == "null" ]]; then
-  echo "No job id returned" >&2
+if ! job_id="$(jq -r '.job_id // .id // empty' <<<"$create_response")"; then
+  echo "Video job creation failed: response was not valid JSON" >&2
+  printf '%s\n' "$create_response" >&2
+  exit 1
+fi
+
+if [[ -z "$job_id" ]]; then
+  echo "Video job creation failed: no job id returned" >&2
+  jq . <<<"$create_response" >&2
   exit 1
 fi
 
@@ -33,7 +40,25 @@ for _ in {1..40}; do
   echo "status=${status}"
 
   if [[ "$status" == "completed" ]]; then
-    video_url="$(jq -r '.video_url // empty' <<<"$status_json")"
+    video_url="$(
+      jq -r '[
+        .video_url?,
+        .presigned_url?,
+        .presignedUrl?,
+        .url?,
+        .urls?[0]?,
+        .video_urls?[0]?,
+        .presigned_urls?[0]?,
+        .output?.video_url?,
+        .output?.url?,
+        .outputs?[0]?.video_url?,
+        .outputs?[0]?.url?,
+        .artifacts?[0]?.video_url?,
+        .artifacts?[0]?.url?,
+        .artifacts?[0]?.presigned_url?,
+        (.. | objects | to_entries[]? | select((.key | test("presigned|signed.*url|artifact.*url|video.*url"; "i")) and (.value | type == "string")) | .value)
+      ] | map(select(type == "string" and length > 0)) | .[0] // empty' <<<"$status_json"
+    )"
     if [[ -z "$video_url" ]]; then
       sleep 5
       continue
