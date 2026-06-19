@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Mock `curl` for the Tenstorrent wrapper regression tests (test/run.sh).
+# Never touches the network. Routes by request URL/method in the args and
+# returns a canned response chosen by $MOCK_SCENARIO. `jq`/`date` still
+# resolve to the real binaries (only `curl` is shadowed via PATH).
+set -uo pipefail
+
+args="$*"
+
+# Capture a `-o <path>` download target if present.
+out=""
+prev=""
+for a in "$@"; do
+  [[ "$prev" == "-o" ]] && out="$a"
+  prev="$a"
+done
+
+emit() { printf '%s' "$1"; }
+
+case "$args" in
+  *"/chat/completions"*)
+    case "${MOCK_SCENARIO:-}" in
+      chat-error) emit '{"error":{"message":"invalid_api_key"}}' ;;
+      *)          emit '{"choices":[{"message":{"content":"Tenstorrent builds AI accelerators."}}]}' ;;
+    esac
+    ;;
+  *"/video/jobs/"*)  # GET job status (job id present in path)
+    case "${MOCK_SCENARIO:-}" in
+      video-presigned) emit '{"status":"completed","artifacts":[{"presigned_url":"https://mock.invalid/v.mp4"}]}' ;;
+      video-failed)    emit '{"status":"failed","error":"render_failed"}' ;;
+      *)               emit '{"status":"completed","video_url":"https://mock.invalid/v.mp4"}' ;;
+    esac
+    ;;
+  *"/video/jobs"*)   # POST create job
+    case "${MOCK_SCENARIO:-}" in
+      video-error) emit '{"error":{"message":"quota_exceeded"}}' ;;  # no job_id -> wrapper must surface + exit 1
+      *)           emit '{"job_id":"mockjob123"}' ;;
+    esac
+    ;;
+  *)                 # video download (curl -L -sS <url> -o <path>)
+    [[ -n "$out" ]] && printf 'FAKEMP4DATA' > "$out"
+    ;;
+esac
+exit 0

@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps (jq, shellcheck)
+        run: sudo apt-get update && sudo apt-get install -y jq shellcheck
+
+      - name: Syntax check (bash -n)
+        run: bash -n examples/chat.sh examples/video.sh test/run.sh test/mock-bin/curl
+
+      - name: Shellcheck (errors only)
+        run: shellcheck --severity=error examples/chat.sh examples/video.sh test/run.sh test/mock-bin/curl
+
+      - name: Regression tests (mocked curl, no API key)
+        run: bash test/run.sh
