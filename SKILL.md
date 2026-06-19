@@ -1,6 +1,6 @@
 ---
 name: tenstorrent
-description: "Use Tenstorrent console.tenstorrent.com models across chat, image, video, TTS, and STT. Triggers: tenstorrent, 텐스토렌트, Torendissi, 토렌디시, Wan2.2, T2V, text-to-video, image jobs, SDXL, tt-sd3.5, tt-z-image-turbo, DeepSeek-R1, Qwen3, Qwen3-VL, Gemma 4 31B, tts-1, whisper-large-v3."
+description: "Use Tenstorrent console.tenstorrent.com models across chat, image, video, TTS, and STT. Triggers: tenstorrent, 텐스토렌트, Torendissi, 토렌디시, Wan2.2, T2V, text-to-video, image jobs, SDXL, tt-sd3.5, tt-z-image-turbo, DeepSeek-R1, Qwen3, tts-1, whisper-large-v3."
 license: MIT
 compatibility: Requires internet access and a Tenstorrent console account / API key.
 ---
@@ -19,23 +19,21 @@ export TENSTORRENT_KEY="your-api-key"
 
 Do not commit real keys or `.env` files.
 
-## Model Catalog (18 models)
+## Model Catalog (15 models)
 
 ### Chat (POST `/v1/chat/completions`)
 
 | Model ID | Notes |
 |---|---|
 | `deepseek-ai/DeepSeek-R1-0528` | reasoning model; final answer in `content`, reasoning trace may appear in `reasoning`. |
-| `Qwen/Qwen3-32B` | thinking model; trace may appear in `reasoning` and `reasoning_content`. |
-| `Qwen/Qwen3-VL-32B-Instruct` | default chat; standard OpenAI-style response and text-only OK. |
-| `google/gemma-4-31B-it` | Gemma 4 31B Instruct. |
+| `Qwen/Qwen3-32B` | default chat; thinking model; trace may appear in `reasoning` and `reasoning_content`. |
 
 ```bash
 curl -sS -X POST "https://console.tenstorrent.com/v1/chat/completions" \
   -H "Authorization: Bearer $TENSTORRENT_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "Qwen/Qwen3-VL-32B-Instruct",
+    "model": "Qwen/Qwen3-32B",
     "messages": [{"role":"user","content":"한국어로 한 문장 인사해줘."}],
     "max_tokens": 256
   }'

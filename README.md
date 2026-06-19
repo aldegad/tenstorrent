@@ -1,6 +1,6 @@
 # Tenstorrent Skill
 
-Tenstorrent `console.tenstorrent.com` skill for Claude Code, Codex, and Agent SDK: Wan 2.2 text-to-video plus OpenAI-compatible chat with DeepSeek-R1, Qwen3-32B, and Qwen3-VL.
+Tenstorrent `console.tenstorrent.com` skill for Claude Code, Codex, and Agent SDK: Wan 2.2 text-to-video plus OpenAI-compatible chat with DeepSeek-R1 and Qwen3-32B.
 
 ## Install
 
@@ -28,7 +28,7 @@ curl -sS -X POST "https://console.tenstorrent.com/v1/chat/completions" \
   -H "Authorization: Bearer $TENSTORRENT_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "Qwen/Qwen3-VL-32B-Instruct",
+    "model": "Qwen/Qwen3-32B",
     "messages": [{"role":"user","content":"Say hello in one short sentence."}],
     "max_tokens": 256
   }' | jq -r '.choices[0].message.content // .choices[0].message.reasoning // .choices[0].message.reasoning_content'
