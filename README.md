@@ -8,7 +8,7 @@ Place `SKILL.md` at one of these paths:
 
 ```text
 ~/.claude/skills/tenstorrent/SKILL.md
-~/.codex/skills/tenstorrent/SKILL.md
+~/.agents/skills/tenstorrent/SKILL.md
 ```
 
 ## Authentication
